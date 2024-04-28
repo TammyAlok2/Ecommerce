@@ -1,44 +1,54 @@
 // SignUpPage.js
 import React, { useState, useContext } from 'react';
 import axios from 'axios';
-import userContext from '../Context/UserContext.js';
-import {useNavigate} from 'react-router-dom'
+import { loginAccount } from '../Redux/Slices/AuthSlice';
 
-import { Toaster } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom'
+
+import { Toaster,toast } from 'react-hot-toast';
+import { useDispatch } from 'react-redux';
 
 function SignUpPage() {
-  const { login } = useContext(userContext);
-  const [formData, setFormData] = useState({
+
+  const [loginData, setLoginData] = useState({
     email: '',
-    password: '',
+    passward: '',
     role: ''
   });
   const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
+    setLoginData(prevState => ({
       ...prevState,
       [name]: value
     }));
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post('http://localhost:3000/api/v1/user/signIn', formData);
-      const { user, token } = response.data;
-      login(user, token); // Store user data and token in context
-      toast.success('Login Successfully ')
-      // Redirect to dashboard or desired page upon successful login
-      // Replace the line below with your desired redirect logic
-      useNavigate('/Dashboard');
-    } catch (error) {
-      console.error('Login failed:', error);
-      setError('Login failed. Please try again.');
-      toast.error('Sign Failed ')
-    }
-  };
+   async function onLogin( event){
+event.preventDefault();
+
+if(!loginData.email || !loginData.passward || !loginData.role){
+  toast.error("please fill all the details ")
+  return 
+}
+
+const response = await dispatch(loginAccount(loginData));
+if(response?.payload?.success){
+  navigate('/dashboard')
+
+  setLoginData({
+    email:"",
+    passward:"",
+    
+  })
+}
+
+ 
+}
+
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900 flex justify-center">
@@ -51,26 +61,26 @@ function SignUpPage() {
             <h1 className="text-2xl xl:text-3xl font-extrabold">
               User Login for Ecommerce
             </h1>
-            <form onSubmit={handleLogin} className="w-full mt-8">
+            <form onSubmit={onLogin} className="w-full mt-8" noValidate>
               <input
                 className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
                 type="email"
                 name="email"
-                value={formData.email}
+                value={loginData.email}
                 onChange={handleChange}
                 placeholder="Email"
               />
               <input
                 className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
                 type="password"
-                name="password"
-                value={formData.password}
+                name="passward"
+                value={loginData.passward}
                 onChange={handleChange}
                 placeholder="Password"
               />
-              <select  onChange={handleChange} name='role'  className="w-25 px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5 ">
-                <option  className='font-medium bg-gray-200'> USER </option>   
-                <option> ADMIN </option>   
+              <select value={loginData.role}  defaultValue="USER"  onChange={handleChange} name='role'  className="w-25 px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5 ">
+                <option  className='font-medium bg-gray-200' value="USER"> USER </option>   
+                <option value="ADMIN"> ADMIN </option>   
               </select>
               <button
                 type="submit"
@@ -80,7 +90,7 @@ function SignUpPage() {
                   Login
                 </span>
               </button>
-              <Toaster/>
+              
             </form>
             {error && <p className="text-red-500 mt-2">{error}</p>}
           </div>

@@ -8,6 +8,7 @@ import { uploadOnCloudaniry } from "../Utils/Cloudinary.js";
 
 const getAllShop = asyncHandler(async (req, res, next) => {
     // find all the courses from Database without lectures
+    console.log('getAllShop')
     const shops = await Shop.find({}).select("-Products -Orders")
   
     if (!shops) {
@@ -22,6 +23,7 @@ const addShop = asyncHandler(async(req,res,next)=>{
   // taking the data from fronted and validation
   // taking new thumbnail from files  and upload on cloudinary
   // making new course
+  console.log('request generated for add shop ');
   const { title, description, category } = req.body;
   console.log(title,description,category)
 
@@ -316,6 +318,7 @@ if(rating){
   })
 
   const getAllShopByAdminId = asyncHandler(async(req,res)=>{
+    console.log('getAllShop')
     const createdBy = req.params;
     
 

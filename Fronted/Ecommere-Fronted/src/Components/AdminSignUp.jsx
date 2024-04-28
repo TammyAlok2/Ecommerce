@@ -2,33 +2,86 @@ import React from 'react';
 import { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { Backend_URL } from '../../constant';
+import HomeLayout from '../Layouts/HomeLayout';
+import { useDispatch } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { createAccount } from '../Redux/Slices/AuthSlice';
 function SignUpPage() {
 
-  const [formData, setFormData] = useState({
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
+const [signUpData,setSignUpData] = useState({
+  email: '',
+    username: '',
+    passward: '',
+    role:'',
+    avatar: null
+})
+
+const handleChange = (e) => {
+  const { name, value, files } = e.target;
+  if (name === 'avatar') {
+    setSignUpData(prevState => ({
+      ...prevState,
+      [name]: files[0] // Only taking the first file if multiple files are selected
+
+    }));
+  } else {
+    setSignUpData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  }
+};
+
+ 
+  const [error, setError] = useState(null);
+
+  async function createNewAccount (event){
+  event.preventDefault();
+
+  if(!signUpData.email || !signUpData.passward || !signUpData.username || ! signUpData.avatar){
+    toast.error('All fields are required')
+  return
+  }
+
+  if(signUpData.username.length<5){
+    toast.error("Username should be atleast 5 charcter")
+  return
+  }
+
+
+
+  const formData = new FormData();
+  formData.append("username",signUpData.username)
+  formData.append("email",signUpData.email)
+  formData.append("passward",signUpData.passward)
+  formData.append("avatar",signUpData.avatar)
+  formData.append("role",signUpData.role)
+
+
+  const response = await dispatch(createAccount(formData));
+  if(response?.payload?.success)
+  navigate('/');
+
+  setSignUpData({
     email: '',
     username: '',
     passward: '',
     role:'',
     avatar: null
-  });
-  const [error, setError] = useState(null);
 
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === 'avatar') {
-      setFormData(prevState => ({
-        ...prevState,
-        [name]: files[0] // Only taking the first file if multiple files are selected
-      }));
-    } else {
-      setFormData(prevState => ({
-        ...prevState,
-        [name]: value
-      }));
-    }
-  };
+  })
+  
+ }
 
-  const handleSubmit = async (e) => {
+
+ 
+
+
+
+  const handleSubmit1 = async (e) => {
     e.preventDefault();
     try {
       const formDataToSend = new FormData();
@@ -70,7 +123,13 @@ function SignUpPage() {
     }
   };
 
+
+
+
+
   return (
+
+    <HomeLayout>
     <div className="min-h-screen bg-gray-100 text-gray-900 flex justify-center">
       <div className="max-w-screen-xl m-0 sm:m-20 bg-white shadow sm:rounded-lg flex justify-center flex-1">
         <div className="lg:w-1/2 xl:w-5/12 p-6 sm:p-12">
@@ -116,19 +175,19 @@ function SignUpPage() {
               </div>
 
               <div className="mx-auto max-w-xs">
-              <form onSubmit={handleSubmit} className="mx-auto max-w-xs">
+              <form onSubmit={createNewAccount} className="mx-auto max-w-xs" noValidate>
               <input className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" type="text" name="username"
-        value={formData.username}
+        value={signUpData.username}
         onChange={handleChange}
         placeholder="Username" />
               <br/>
               <br/>
                 <input className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white" type="email"   name="email"
-        value={formData.email}
+        value={signUpData.email}
         onChange={handleChange}
         placeholder="Email"/>
                 <input className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5" type="password"  name="passward"
-        value={formData.passward}
+        value={signUpData.passward}
         onChange={handleChange}
         placeholder="Password" />
   <input
@@ -139,7 +198,7 @@ function SignUpPage() {
         className="mt-5"
       />
 
-<select value={formData.role} onChange={handleChange} name='role'  className="w-25 px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5 ">
+<select value={signUpData.role} onChange={handleChange} name='role'  className="w-25 px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5 ">
                 <option selected className='font-medium bg-gray-200'value="USER"> USER </option>   
                 <option value = "ADMIN"> ADMIN </option>   
                          </select>
@@ -167,6 +226,9 @@ function SignUpPage() {
                   <a href="#" className="border-b border-gray-500 border-dotted">
                     Privacy Policy
                   </a>
+                  <Link to ='/login' className="border-b border-gray-500 border-dotted text-red-700 text-xl">
+                    Sign In 
+                  </Link>
                 </p>
               </div>
             </div>
@@ -177,6 +239,7 @@ function SignUpPage() {
         </div>
       </div>
     </div>
+    </HomeLayout>
   );
 }
 

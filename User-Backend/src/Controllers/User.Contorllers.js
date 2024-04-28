@@ -166,6 +166,7 @@ const userId = req.user.id;
 
 
 const logout = asyncHandler(async (req,res,next)=>{
+    
 
     try {
         const cookieOption = {
